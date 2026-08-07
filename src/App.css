@@ -187,6 +187,11 @@ body {
   display: none;
 }
 
+.scene-overlay-career {
+  justify-content: flex-end;
+  padding-bottom: 4.5rem;
+}
+
 .scene-number {
   font-size: clamp(2.4rem, 3vw, 3.2rem);
   font-weight: 800;
@@ -474,22 +479,11 @@ body {
   font-size: 1rem;
 }
 
-.hero-avatar {
-  position: fixed;
-  bottom: 22vh;
-  width: clamp(90px, 10vw, 170px);
-  transform: translateX(-50%);
-  z-index: 60;
-  pointer-events: none;
-  isolation: isolate;
-}
-
 .scene-path-overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 5;
-  visibility: hidden;
 }
 
 .scene-path-svg {
@@ -498,29 +492,10 @@ body {
 }
 
 .scene-path-line,
-.scene-path-trace {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.scene-path-line {
-  stroke: rgba(126, 211, 255, 0.22);
-  stroke-width: 16;
-  filter: blur(1px);
-}
-
-.scene-path-trace {
-  stroke: rgba(126, 211, 255, 0.8);
-  stroke-width: 6;
-  stroke-dasharray: 18 22;
-  opacity: 0.95;
-}
-
+.scene-path-trace,
 .scene-path-dot {
-  fill: rgba(175, 238, 255, 0.88);
-  opacity: 0.75;
-  filter: drop-shadow(0 0 10px rgba(126, 211, 255, 0.35));
+  opacity: 0;
+  pointer-events: none;
 }
 
 .hero-avatar.flipped img {
@@ -529,11 +504,15 @@ body {
 
 .hero-avatar {
   position: fixed;
+  bottom: 22vh;
   width: clamp(90px, 10vw, 170px);
   transform: translateX(-50%);
-  z-index: 60;
+  z-index: 999;
   pointer-events: none;
   isolation: isolate;
+  opacity: 1;
+  visibility: visible;
+  background: transparent;
 }
 
 .hero-avatar img {
@@ -542,6 +521,10 @@ body {
   background: transparent;
   object-fit: contain;
   max-height: 100%;
+}
+
+.hero-avatar img.walking {
+  animation: walkingBob 0.28s ease-in-out infinite alternate;
 }
 
 .sr-only {
@@ -557,26 +540,6 @@ body {
 }
 
 .scene-home { background-image: url('/town/01-home.jpg'); }
-
-.hero-avatar {
-  position: fixed;
-  bottom: 18vh;
-  width: clamp(90px, 10vw, 170px);
-  transform: translateX(-50%);
-  z-index: 50;
-  pointer-events: none;
-  background: transparent;
-}
-
-.hero-avatar img {
-  width: 100%;
-  display: block;
-  background: transparent;
-}
-
-.hero-avatar img.walking {
-  animation: walkingBob 0.28s ease-in-out infinite alternate;
-}
 
 @keyframes walkingBob {
   from {

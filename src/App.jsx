@@ -27,7 +27,7 @@ function App() {
   const getAvatarPositionOnJourney = (progress) => {
     const clamped = Math.min(1, Math.max(0, progress))
     const totalLength = getTotalJourneyLength()
-    if (totalLength <= 0) return { x: 84, bottom: 10 }
+    if (totalLength <= 0) return { x: 8, bottom: 22 }
 
     let remaining = totalLength * clamped
     for (let i = 0; i < journeyPathOrder.length; i += 1) {
@@ -143,7 +143,7 @@ function App() {
       introduction: 'Two qualifications from my academic journey.',
       items: [
         {
-          title: 'MSc International Business — Distinction',
+          title: 'MSc International Business',
           institution: 'Nottingham Trent University',
           date: '2023 – 2024',
           modulesHeading: 'MODULES',
@@ -152,9 +152,7 @@ function App() {
             'Commendation in Cross-Culture Management.'
           ],
           details: [
-            'Final Consultancy Project (Distinction): “Funding Strategy Development for Citizen Digital Foundation”.',
-            'Researched and developed funding strategy recommendations for a US-based NGO.',
-            'Presented findings to project stakeholders across time zones.'
+            'Final Consultancy Project: "Funding Strategy Development for Citizen Digital Foundation".'
           ]
         },
         {
@@ -446,7 +444,7 @@ function App() {
     <main className="portfolio">
       <div className={`hero-avatar${avatarDirection < 0 ? ' flipped' : ''} ${isWalking ? 'walking' : 'idle'}`} style={{ left: `${avatarLeft}%`, bottom: `${avatarBottom}vh`, display: showAvatar ? 'block' : 'none' }} aria-hidden={!showAvatar}>
         <img
-          src="/profile/profile-avatar.png"
+          src={`${import.meta.env.BASE_URL}profile/profile-avatar.png`}
           alt=""
           className={isWalking ? 'walking' : 'idle'}
         />
@@ -475,12 +473,8 @@ function App() {
 
       <section id="education" className="scene-section scene-education" aria-label="Education town scene.">
         <JourneyPath pathId="education" />
-        <div className="scene-overlay">
-          <div className="scene-top-number">
-            <div className="scene-number">2</div>
-          </div>
+        <div className="scene-overlay scene-overlay-career">
           <div className="scene-bottom-info">
-            <span className="scene-label">EDUCATION</span>
             <button type="button" className="scene-action-button" onClick={() => setActiveModal('education')}>
               Education
             </button>
@@ -490,10 +484,7 @@ function App() {
 
       <section id="educate2trade" className="scene-section scene-educate2trade" aria-label="Educate2Trade career scene.">
         <JourneyPath pathId="educate2trade" />
-        <div className="scene-overlay">
-          <div className="scene-top-number">
-            <div className="scene-number">3</div>
-          </div>
+        <div className="scene-overlay scene-overlay-career">
           <div className="scene-bottom-info">
             <span className="scene-label">CAREER</span>
             <h2>Financial Analyst Intern</h2>
@@ -507,10 +498,7 @@ function App() {
 
       <section id="bhf" className="scene-section scene-bhf" aria-label="British Heart Foundation career scene.">
         <JourneyPath pathId="bhf" />
-        <div className="scene-overlay">
-          <div className="scene-top-number">
-            <div className="scene-number">4</div>
-          </div>
+        <div className="scene-overlay scene-overlay-career">
           <div className="scene-bottom-info">
             <span className="scene-label">CAREER</span>
             <h2>Retail Volunteer</h2>
@@ -524,10 +512,7 @@ function App() {
 
       <section id="aston" className="scene-section scene-aston" aria-label="Aston Business Intelligence career scene.">
         <JourneyPath pathId="aston" />
-        <div className="scene-overlay">
-          <div className="scene-top-number">
-            <div className="scene-number">5</div>
-          </div>
+        <div className="scene-overlay scene-overlay-career">
           <div className="scene-bottom-info">
             <span className="scene-label">CAREER</span>
             <h2>Business Analyst</h2>
@@ -541,10 +526,7 @@ function App() {
 
       <section id="ceva" className="scene-section scene-ceva" aria-label="CEVA Logistics career scene.">
         <JourneyPath pathId="ceva" />
-        <div className="scene-overlay">
-          <div className="scene-top-number">
-            <div className="scene-number">6</div>
-          </div>
+        <div className="scene-overlay scene-overlay-career">
           <div className="scene-bottom-info">
             <span className="scene-label">CAREER</span>
             <h2>Warehouse Admin Assistant</h2>
@@ -632,7 +614,7 @@ function App() {
 
 
 <img
-  src="/project/E-commerce%20Sales%20Dashboard.png"
+  src="/gaurav-portfolio/project/E-commerce%20Sales%20Dashboard.png"
   alt="E-Commerce Sales Analysis Power BI Dashboard"
   className="project-dashboard"
 />
@@ -676,7 +658,7 @@ function App() {
 
 
 <img
-  src="/project/powerbi_churn_dashboard.png"
+  src="/gaurav-portfolio/project/powerbi_churn_dashboard.png"
   alt="Customer Churn Analysis Power BI Dashboard"
   className="project-dashboard"
 />
