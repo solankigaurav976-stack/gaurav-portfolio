@@ -788,7 +788,7 @@ function App() {
         GitHub ↗
       </a>
 <a
-  href="/CV/Gaurav-Solanki-CV.pdf"
+  href="./CV/Gaurav-Solanki-CV.pdf"
   target="_blank"
   rel="noopener noreferrer"
   className="contact-button"
