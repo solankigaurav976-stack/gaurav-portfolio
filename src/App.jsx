@@ -694,6 +694,49 @@ function App() {
     View Project →
   </a>
 </div>
+
+<div className="project-card">
+  <div className="project-number">03</div>
+
+  <span className="project-type">BUSINESS INTELLIGENCE</span>
+
+  <h3>Supply Chain &amp; Operations Business Intelligence System</h3>
+
+
+<img
+  src="/gaurav-portfolio/project/supply-chain-dashboard.png"
+  alt="Supply Chain & Operations Power BI Dashboard"
+  className="project-dashboard"
+/>
+
+<p>
+  Built an end-to-end BI solution for supply chain operations...
+</p>
+
+  <p>
+    Built an end-to-end Business Intelligence solution using SQL/PostgreSQL and Power BI to analyse 2M+ stock units and £340.86M in inventory value. Identified 254 products at risk by analysing inventory levels, warehouse performance, supplier trends and reorder requirements.
+  </p>
+
+  <div className="project-tools">
+  <span>SQL</span>
+  <span>PostgreSQL</span>
+  <span>Power BI</span>
+  <span>Excel</span>
+  <span>Data Modelling</span>
+  <span>2M+ Stock Units</span>
+  <span>£340.86M Inventory Value</span>
+  <span>254 Products At Risk</span>
+</div>
+
+  <a
+    href="https://github.com/solankigaurav976-stack/Supply-Chain-Operations-BI"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="project-button"
+  >
+    View Project →
+  </a>
+</div>
 </div>
 </section>  
     <section id="hobbies" className="hobbies-section">
