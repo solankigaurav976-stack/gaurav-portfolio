@@ -31,6 +31,8 @@ body {
   scroll-snap-align: start;
   min-height: 100vh;
   height: 100vh;
+  min-height: 100dvh;
+  height: 100dvh;
   width: 100%;
   position: relative;
   background-color: #000;
@@ -360,7 +362,8 @@ body {
 }
 
 @media (max-width: 820px) {
-  .scene-overlay {
+  .scene-overlay,
+  .scene-education .scene-overlay {
     padding: 0 4rem 4rem;
   }
 
@@ -370,7 +373,8 @@ body {
 }
 
 @media (max-width: 620px) {
-  .scene-overlay {
+  .scene-overlay,
+  .scene-education .scene-overlay {
     padding: 0 1.4rem 3.5rem;
   }
 
@@ -907,6 +911,19 @@ body {
     height: auto;
     max-width: 100%;
   }
+
+  .project-card {
+    padding: 28px 22px;
+  }
+
+  .project-card h3 {
+    font-size: clamp(1.4rem, 6vw, 1.9rem);
+  }
+
+  .project-number {
+    right: 22px;
+    font-size: 44px;
+  }
 }
 /* =========================
    HOBBIES SECTION
@@ -1080,3 +1097,236 @@ body {
   }
 }
 /* Legacy decorative styles removed */
+
+/* =========================
+   SUBTLE 3D SCROLL DEPTH
+========================= */
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-avatar {
+    transform:
+      perspective(900px)
+      translateX(-50%)
+      rotateY(var(--avatar-tilt-y, 0deg))
+      rotateZ(var(--avatar-tilt-z, 0deg))
+      translateZ(var(--avatar-depth, 0px))
+      scale(var(--avatar-bump-scale, 1));
+    transition: transform 0.42s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .hero-avatar img.walking {
+    animation-duration: var(--avatar-bounce-duration, 0.28s);
+  }
+
+  @keyframes walkingBob {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(calc(-1 * var(--avatar-bounce-amp, 5px)));
+    }
+  }
+
+  .scene-section {
+    perspective: 1100px;
+  }
+
+  .scene-overlay-inner,
+  .scene-bottom-info {
+    transform: translateZ(-24px) rotateX(3deg);
+    transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  .scene-overlay-inner.in-view,
+  .scene-bottom-info.in-view {
+    transform: translateZ(0) rotateX(0deg);
+  }
+
+  .skills-grid,
+  .projects-grid,
+  .hobbies-grid {
+    perspective: 1400px;
+  }
+
+  .skill-card,
+  .project-card,
+  .hobby-card {
+    transform: translateZ(-30px) rotateX(4deg);
+  }
+
+  .skill-card:where(.in-view),
+  .project-card:where(.in-view),
+  .hobby-card:where(.in-view) {
+    transform: translateZ(0) rotateX(0deg);
+  }
+}
+
+/* =========================
+   AVATAR SECTION ACTIVITIES
+========================= */
+
+.avatar-figure {
+  position: relative;
+}
+
+.avatar-pose-img {
+  display: block;
+  width: 100%;
+  object-fit: contain;
+  transition: opacity 0.5s ease;
+}
+
+.avatar-pose-img:not(.pose-default) {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.hero-avatar[data-pose="studying"] .pose-studying,
+.hero-avatar[data-pose="working"] .pose-working,
+.hero-avatar[data-pose="logistics"] .pose-logistics,
+.hero-avatar[data-pose="coding"] .pose-coding,
+.hero-avatar[data-pose="analysing"] .pose-analysing,
+.hero-avatar[data-pose="stunt"] .pose-stunt,
+.hero-avatar[data-pose="waving"] .pose-waving {
+  opacity: 1;
+}
+
+.hero-avatar[data-pose="studying"] .pose-default,
+.hero-avatar[data-pose="working"] .pose-default,
+.hero-avatar[data-pose="logistics"] .pose-default,
+.hero-avatar[data-pose="coding"] .pose-default,
+.hero-avatar[data-pose="analysing"] .pose-default,
+.hero-avatar[data-pose="stunt"] .pose-default,
+.hero-avatar[data-pose="waving"] .pose-default {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar-pose-img {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .avatar-figure {
+    transform-origin: 50% 88%;
+  }
+
+  .hero-avatar[data-activity="studying"] .avatar-figure {
+    animation: figureStudy 2s ease-in-out infinite;
+  }
+
+  .hero-avatar[data-activity="working"] .avatar-figure,
+  .hero-avatar[data-activity="coding"] .avatar-figure {
+    animation: figureType 1s ease-in-out infinite;
+  }
+
+  .hero-avatar[data-activity="analysing"] .avatar-figure {
+    animation: figureAnalyse 1.8s ease-in-out infinite;
+  }
+
+  .hero-avatar[data-activity="logistics"] .avatar-figure {
+    animation: figureLift 1.3s ease-in-out infinite;
+  }
+
+  .hero-avatar.entering[data-activity="stunt"] .avatar-figure {
+    animation: figureStunt 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .hero-avatar[data-activity="waving"] .avatar-figure {
+    animation: figureWave 2.2s ease-in-out infinite;
+  }
+
+  @keyframes figureStudy {
+    0%, 100% { transform: rotate(-9deg) translateY(0); }
+    50% { transform: rotate(7deg) translateY(4px); }
+  }
+
+  @keyframes figureType {
+    0%, 100% { transform: rotate(-6deg) translateY(0) scale(1); }
+    50% { transform: rotate(6deg) translateY(-3px) scale(1.03); }
+  }
+
+  @keyframes figureAnalyse {
+    0%, 100% { transform: rotate(-7deg) scale(1); }
+    50% { transform: rotate(7deg) scale(1.06); }
+  }
+
+
+  @keyframes figureLift {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-11px) rotate(-9deg); }
+  }
+
+  @keyframes figureStunt {
+    0% { transform: rotate(0deg) translateY(0) scale(1); }
+    35% { transform: rotate(-190deg) translateY(-26px) scale(1.08); }
+    70% { transform: rotate(-330deg) translateY(-10px) scale(1.04); }
+    100% { transform: rotate(-360deg) translateY(0) scale(1); }
+  }
+
+  @keyframes figureWave {
+    0%, 100% { transform: rotate(-3deg) translateY(0); }
+    50% { transform: rotate(6deg) translateY(-2px); }
+  }
+
+}
+
+/* =========================
+   MOBILE RESPONSIVE PASS
+========================= */
+
+@media (max-width: 768px) {
+  /* On narrow/tall mobile crops, background-size:cover + the default
+     center position pushes the building signage in these three photos
+     outside the visible frame. Shift the crop window per photo so the
+     subject stays in view. Desktop (.scene-section's own center default)
+     is untouched since this only applies under this breakpoint. */
+  .scene-educate2trade {
+    background-position: 70% 20%;
+  }
+
+  .scene-bhf {
+    background-position: 65% 15%;
+  }
+
+  .scene-aston {
+    background-position: 75% 20%;
+  }
+}
+
+@media (max-width: 480px) {
+  /* On narrow screens the docked avatar (Skills/Projects/Hobbies/Contact)
+     can otherwise overlap the section heading text, which is centered
+     and spans nearly the full width at this size. Dock it to a corner
+     instead. Position/size only - transform (3D tilt/bounce) untouched. */
+  .hero-avatar[data-activity="coding"],
+  .hero-avatar[data-activity="analysing"],
+  .hero-avatar[data-activity="stunt"],
+  .hero-avatar[data-activity="waving"] {
+    left: 90% !important;
+    bottom: 5vh !important;
+  }
+
+  /* avatar-coding.png and avatar-project-analysis.png are landscape-oriented,
+     so at the shared clamp() width they render much shorter than the other
+     (portrait) poses via object-fit: contain. Widen just these two so the
+     avatar reads at a comparable size. */
+  .hero-avatar[data-pose="coding"],
+  .hero-avatar[data-pose="analysing"] {
+    width: 132px;
+  }
+
+  .skill-card {
+    padding: 24px 20px;
+  }
+
+  .hobby-card {
+    padding: 26px 18px;
+  }
+
+  .contact-content {
+    padding: 40px 20px;
+  }
+}

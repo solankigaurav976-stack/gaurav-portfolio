@@ -1,6 +1,83 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
+const pathTemplates = {
+  home: {
+    d: 'M165,860 C280,820 840,900 840,980',
+    dots: [
+      { x: 240, y: 820 },
+      { x: 430, y: 730 },
+      { x: 720, y: 620 }
+    ]
+  },
+  education: {
+    d: 'M840,40 L840,900',
+    dots: [
+      { x: 840, y: 120 },
+      { x: 840, y: 340 },
+      { x: 840, y: 560 }
+    ]
+  },
+  educate2trade: {
+    d: 'M840,260 L840,920',
+    dots: [
+      { x: 840, y: 360 },
+      { x: 840, y: 520 },
+      { x: 840, y: 720 }
+    ]
+  },
+  bhf: {
+    d: 'M840,220 L840,920',
+    dots: [
+      { x: 840, y: 320 },
+      { x: 840, y: 520 },
+      { x: 840, y: 720 }
+    ]
+  },
+  aston: {
+    d: 'M840,240 L840,930',
+    dots: [
+      { x: 840, y: 340 },
+      { x: 840, y: 540 },
+      { x: 840, y: 760 }
+    ]
+  },
+  ceva: {
+    d: 'M840,250 L840,930',
+    dots: [
+      { x: 840, y: 340 },
+      { x: 840, y: 520 },
+      { x: 840, y: 740 }
+    ]
+  }
+}
+
+function JourneyPath({ pathId, onPathRef }) {
+  const data = pathTemplates[pathId]
+  if (!data) return null
+
+  return (
+    <div className="scene-path-overlay" aria-hidden="true">
+      <svg className="scene-path-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+        <path
+          ref={(node) => {
+            if (node) {
+              const svg = node.ownerSVGElement || node.closest('svg')
+              onPathRef(pathId, { path: node, svg })
+            }
+          }}
+          className="scene-path-line"
+          d={data.d}
+        />
+        <path className="scene-path-trace" d={data.d} />
+        {data.dots.map((dot, index) => (
+          <circle key={index} className="scene-path-dot" cx={dot.x} cy={dot.y} r="7" />
+        ))}
+      </svg>
+    </div>
+  )
+}
+
 function App() {
   const [isWalking, setIsWalking] = useState(false)
   const [avatarLeft, setAvatarLeft] = useState(8)
@@ -8,18 +85,67 @@ function App() {
   const [avatarDirection, setAvatarDirection] = useState(1)
   const [showAvatar, setShowAvatar] = useState(true)
   const [activeModal, setActiveModal] = useState(null)
+  const [avatarMotion, setAvatarMotion] = useState({ tiltY: 0, tiltZ: 0, depth: 0, bounceAmp: 5, speedFactor: 1 })
+  const [isEnteringSection, setIsEnteringSection] = useState(false)
+  const [activeSection, setActiveSection] = useState('home')
   const scrollTimeout = useRef(null)
   const pathRefs = useRef({})
+  const registerPathRef = (pathId, entry) => {
+    pathRefs.current[pathId] = entry
+  }
   const lastAvatarX = useRef(8)
   const lastAvatarDirection = useRef(1)
   const lastScrollY = useRef(0)
   const rafPending = useRef(false)
   const latestScrollY = useRef(0)
+  const avatarVelocity = useRef(0)
+  const lastFrameTime = useRef(0)
+  const lastSectionId = useRef(null)
+  const sectionEnterTimeout = useRef(null)
+  const reducedMotionRef = useRef(false)
   const journeyPathOrder = ['home', 'education', 'educate2trade', 'bhf', 'aston', 'ceva']
+  const allSectionIds = ['home', 'education', 'educate2trade', 'bhf', 'aston', 'ceva', 'skills', 'projects', 'hobbies', 'contact']
+  const sectionActivity = {
+    home: 'walking',
+    education: 'studying',
+    educate2trade: 'working',
+    bhf: 'working',
+    aston: 'working',
+    ceva: 'logistics',
+    skills: 'coding',
+    projects: 'analysing',
+    hobbies: 'stunt',
+    contact: 'waving'
+  }
+  const activityPoseImage = {
+    studying: 'studying',
+    working: 'working',
+    logistics: 'logistics',
+    coding: 'coding',
+    analysing: 'analysing',
+    stunt: 'stunt',
+    waving: 'waving'
+  }
+
+  const detectActiveSection = (currentY) => {
+    const viewportCenter = currentY + window.innerHeight / 2
+    let found = allSectionIds[0]
+    for (let i = 0; i < allSectionIds.length; i += 1) {
+      const el = document.getElementById(allSectionIds[i])
+      if (!el) continue
+      const top = el.offsetTop
+      const bottom = top + el.offsetHeight
+      if (viewportCenter >= top && viewportCenter < bottom) {
+        found = allSectionIds[i]
+        break
+      }
+    }
+    return found
+  }
 
   const getTotalJourneyLength = () => {
     return journeyPathOrder.reduce((total, id) => {
-      const path = pathRefs.current[id]
+      const path = pathRefs.current[id]?.path
       return total + (path && typeof path.getTotalLength === 'function' ? path.getTotalLength() : 0)
     }, 0)
   }
@@ -43,98 +169,18 @@ function App() {
         const svgRect = svg.getBoundingClientRect()
         const yViewport = svgRect.top + (point.y / 1000) * svgRect.height
         const x = (point.x / 1000) * 100
-        const bottom = 100 - (yViewport / window.innerHeight) * 100
+        const bottom = Math.max(6, Math.min(70, 100 - (yViewport / window.innerHeight) * 100))
 
         return {
           x,
-          bottom
+          bottom,
+          id
         }
       }
       remaining -= length
     }
 
-    return { x: 84, bottom: 10 }
-  }
-
-  const sectionPathPoints = {
-    home: [
-      { progress: 0, x: 16, bottom: 14 },
-      { progress: 0.5, x: 48, bottom: 34 },
-      { progress: 0.9, x: 84, bottom: 12 },
-      { progress: 1, x: 84, bottom: 10 }
-    ],
-    education: [
-      { progress: 0, x: 84, bottom: 10 },
-      { progress: 0.5, x: 84, bottom: 44 },
-      { progress: 0.85, x: 84, bottom: 60 },
-      { progress: 1, x: 84, bottom: 10 }
-    ],
-    educate2trade: [
-      { progress: 0, x: 84, bottom: 18 },
-      { progress: 0.5, x: 84, bottom: 32 },
-      { progress: 1, x: 84, bottom: 14 }
-    ],
-    bhf: [
-      { progress: 0, x: 84, bottom: 14 },
-      { progress: 0.5, x: 84, bottom: 26 },
-      { progress: 1, x: 84, bottom: 14 }
-    ],
-    aston: [
-      { progress: 0, x: 84, bottom: 14 },
-      { progress: 0.5, x: 84, bottom: 26 },
-      { progress: 1, x: 84, bottom: 12 }
-    ],
-    ceva: [
-      { progress: 0, x: 84, bottom: 12 },
-      { progress: 0.5, x: 84, bottom: 20 },
-      { progress: 1, x: 84, bottom: 10 }
-    ]
-  }
-
-  const getAvatarPosition = (progress, pathInput) => {
-    const clamped = Math.min(1, Math.max(0, progress))
-
-    if (pathInput && typeof pathInput.getTotalLength === 'function') {
-      const length = pathInput.getTotalLength()
-      const { x, y } = pathInput.getPointAtLength(clamped * length)
-
-      return {
-        x: (x / 1000) * 100,
-        bottom: 100 - (y / 1000) * 100
-      }
-    }
-
-    if (Array.isArray(pathInput) && pathInput.length) {
-      const points = pathInput
-      for (let i = 1; i < points.length; i += 1) {
-        const prev = points[i - 1]
-        const next = points[i]
-        if (clamped <= next.progress) {
-          const range = next.progress - prev.progress
-          const local = range > 0 ? (clamped - prev.progress) / range : 0
-          return {
-            x: prev.x + (next.x - prev.x) * local,
-            bottom: prev.bottom + (next.bottom - prev.bottom) * local
-          }
-        }
-      }
-      const lastPoint = points[points.length - 1]
-      return { x: lastPoint.x, bottom: lastPoint.bottom }
-    }
-
-    if (typeof pathInput === 'string' && pathInput.length) {
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-      path.setAttribute('d', pathInput)
-      const length = path.getTotalLength()
-      const { x, y } = path.getPointAtLength(clamped * length)
-
-      return {
-        x: (x / 1000) * 100,
-        bottom: 100 - (y / 1000) * 100
-      }
-    }
-
-    return { x: 50, bottom: 20 }
+    return { x: 84, bottom: 10, id: journeyPathOrder[journeyPathOrder.length - 1] }
   }
 
   const modalConfig = {
@@ -219,12 +265,21 @@ function App() {
 
   useEffect(() => {
     const sectionIds = ['home', 'education', 'educate2trade', 'bhf', 'aston', 'ceva']
+    reducedMotionRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    const settleAvatarMotion = () => {
+      avatarVelocity.current = 0
+      setAvatarMotion({ tiltY: 0, tiltZ: 0, depth: 0, bounceAmp: 5, speedFactor: 1 })
+    }
 
     const updateAvatar = () => {
       rafPending.current = false
       setIsWalking(true)
       if (scrollTimeout.current) window.clearTimeout(scrollTimeout.current)
-      scrollTimeout.current = window.setTimeout(() => setIsWalking(false), 120)
+      scrollTimeout.current = window.setTimeout(() => {
+        setIsWalking(false)
+        settleAvatarMotion()
+      }, 120)
 
       const sections = sectionIds
         .map((id) => document.getElementById(id))
@@ -233,7 +288,7 @@ function App() {
       if (!sections.length) return
 
       const ready = journeyPathOrder.every((id) => {
-        const path = pathRefs.current[id]
+        const path = pathRefs.current[id]?.path
         return path && typeof path.getTotalLength === 'function'
       })
 
@@ -254,11 +309,42 @@ function App() {
       const globalProgress = Math.min(1, Math.max(0, (currentY - journeyStart) / journeyHeight))
       const nextPosition = getAvatarPositionOnJourney(globalProgress, sections, currentY)
       const scrollDelta = currentY - lastScrollY.current
-      const shouldShow = currentY < skillsTop
+      const contactSection = document.getElementById('contact')
+      const contactEnd = contactSection ? contactSection.offsetTop + contactSection.offsetHeight : skillsTop
+      const shouldShow = currentY < contactEnd
       const deltaX = nextPosition.x - lastAvatarX.current
       let direction = lastAvatarDirection.current
       if (deltaX > 0.5) direction = 1
       else if (deltaX < -0.5) direction = -1
+
+      const now = performance.now()
+      const deltaTime = lastFrameTime.current ? Math.max(1, now - lastFrameTime.current) : 16
+      lastFrameTime.current = now
+      const instantVelocity = scrollDelta / deltaTime
+      const smoothedVelocity = avatarVelocity.current * 0.7 + instantVelocity * 0.3
+      avatarVelocity.current = smoothedVelocity
+
+      const activeSectionId = detectActiveSection(currentY)
+      if (lastSectionId.current !== null && lastSectionId.current !== activeSectionId) {
+        const enteringActivity = sectionActivity[activeSectionId] || 'walking'
+        setIsEnteringSection(true)
+        if (sectionEnterTimeout.current) window.clearTimeout(sectionEnterTimeout.current)
+        const bumpDuration = enteringActivity === 'stunt' ? 650 : enteringActivity === 'waving' ? 1600 : 320
+        sectionEnterTimeout.current = window.setTimeout(() => setIsEnteringSection(false), bumpDuration)
+      }
+      lastSectionId.current = activeSectionId
+      setActiveSection(activeSectionId)
+
+      if (!reducedMotionRef.current) {
+        const speedMagnitude = Math.min(1, Math.abs(smoothedVelocity) / 1.2)
+        setAvatarMotion({
+          tiltY: Math.max(-5, Math.min(5, deltaX * 1.2)),
+          tiltZ: Math.max(-4, Math.min(4, smoothedVelocity * 5)),
+          depth: Math.min(12, speedMagnitude * 12),
+          bounceAmp: 4 + speedMagnitude * 4,
+          speedFactor: 1 + speedMagnitude * 0.5
+        })
+      }
 
       setAvatarLeft(nextPosition.x)
       setAvatarBottom(nextPosition.bottom)
@@ -285,7 +371,33 @@ function App() {
     return () => {
       window.removeEventListener('scroll', onScroll)
       if (scrollTimeout.current) window.clearTimeout(scrollTimeout.current)
+      if (sectionEnterTimeout.current) window.clearTimeout(sectionEnterTimeout.current)
     }
+  }, [])
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined
+
+    const targets = document.querySelectorAll(
+      '.scene-overlay-inner, .scene-bottom-info, .skill-card, .project-card, .hobby-card'
+    )
+    if (!targets.length) return undefined
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.2 }
+    )
+
+    targets.forEach((target) => observer.observe(target))
+
+    return () => observer.disconnect()
   }, [])
 
   useEffect(() => {
@@ -301,82 +413,9 @@ function App() {
 
   const closeModal = () => setActiveModal(null)
 
-  const pathTemplates = {
-    home: {
-      d: 'M165,860 C280,820 840,900 840,980',
-      dots: [
-        { x: 240, y: 820 },
-        { x: 430, y: 730 },
-        { x: 720, y: 620 }
-      ]
-    },
-    education: {
-      d: 'M840,40 L840,900',
-      dots: [
-        { x: 840, y: 120 },
-        { x: 840, y: 340 },
-        { x: 840, y: 560 }
-      ]
-    },
-    educate2trade: {
-      d: 'M840,260 L840,920',
-      dots: [
-        { x: 840, y: 360 },
-        { x: 840, y: 520 },
-        { x: 840, y: 720 }
-      ]
-    },
-    bhf: {
-      d: 'M840,220 L840,920',
-      dots: [
-        { x: 840, y: 320 },
-        { x: 840, y: 520 },
-        { x: 840, y: 720 }
-      ]
-    },
-    aston: {
-      d: 'M840,240 L840,930',
-      dots: [
-        { x: 840, y: 340 },
-        { x: 840, y: 540 },
-        { x: 840, y: 760 }
-      ]
-    },
-    ceva: {
-      d: 'M840,250 L840,930',
-      dots: [
-        { x: 840, y: 340 },
-        { x: 840, y: 520 },
-        { x: 840, y: 740 }
-      ]
-    }
-  }
+  const activity = sectionActivity[activeSection] || 'walking'
+  const pose = activityPoseImage[activity] || 'default'
 
-  const JourneyPath = ({ pathId }) => {
-    const data = pathTemplates[pathId]
-    if (!data) return null
-
-    return (
-      <div className="scene-path-overlay" aria-hidden="true">
-        <svg className="scene-path-svg" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-          <path
-            ref={(node) => {
-              if (node) {
-                const svg = node.ownerSVGElement || node.closest('svg')
-                pathRefs.current[pathId] = { path: node, svg }
-              }
-            }}
-            className="scene-path-line"
-            d={data.d}
-          />
-          <path className="scene-path-trace" d={data.d} />
-          {data.dots.map((dot, index) => (
-            <circle key={index} className="scene-path-dot" cx={dot.x} cy={dot.y} r="7" />
-          ))}
-        </svg>
-      </div>
-    )
-  }
 
   const renderModalContent = () => {
     if (!activeModal) return null
@@ -442,16 +481,76 @@ function App() {
 
   return (
     <main className="portfolio">
-      <div className={`hero-avatar${avatarDirection < 0 ? ' flipped' : ''} ${isWalking ? 'walking' : 'idle'}`} style={{ left: `${avatarLeft}%`, bottom: `${avatarBottom}vh`, display: showAvatar ? 'block' : 'none' }} aria-hidden={!showAvatar}>
-        <img
-          src={`${import.meta.env.BASE_URL}profile/profile-avatar.png`}
-          alt=""
-          className={isWalking ? 'walking' : 'idle'}
-        />
+      <div
+        className={`hero-avatar${avatarDirection < 0 ? ' flipped' : ''} ${isWalking ? 'walking' : 'idle'}${isEnteringSection ? ' entering' : ''}`}
+        data-activity={activity}
+        data-pose={pose}
+        style={{
+          left: `${avatarLeft}%`,
+          bottom: `${avatarBottom}vh`,
+          display: showAvatar ? 'block' : 'none',
+          '--avatar-tilt-y': `${avatarMotion.tiltY}deg`,
+          '--avatar-tilt-z': `${avatarMotion.tiltZ}deg`,
+          '--avatar-depth': `${avatarMotion.depth}px`,
+          '--avatar-bounce-amp': `${avatarMotion.bounceAmp}px`,
+          '--avatar-bounce-duration': `${(0.28 / avatarMotion.speedFactor).toFixed(3)}s`,
+          '--avatar-bump-scale': isEnteringSection ? 1.05 : 1
+        }}
+        aria-hidden={!showAvatar}
+      >
+        <div className="avatar-figure">
+          <img
+            src={`${import.meta.env.BASE_URL}profile/profile-avatar.png`}
+            alt=""
+            className={`avatar-pose-img pose-default${activity === 'walking' && isWalking ? ' walking' : ' idle'}`}
+          />
+          <img
+            src={`${import.meta.env.BASE_URL}profile/avatar-studying.png`}
+            alt=""
+            className="avatar-pose-img pose-studying"
+            loading="lazy"
+          />
+          <img
+            src={`${import.meta.env.BASE_URL}profile/avatar-working.png`}
+            alt=""
+            className="avatar-pose-img pose-working"
+            loading="lazy"
+          />
+          <img
+            src={`${import.meta.env.BASE_URL}profile/avatar-logistics.png`}
+            alt=""
+            className="avatar-pose-img pose-logistics"
+            loading="lazy"
+          />
+          <img
+            src={`${import.meta.env.BASE_URL}profile/avatar-coding.png`}
+            alt=""
+            className="avatar-pose-img pose-coding"
+            loading="lazy"
+          />
+          <img
+            src={`${import.meta.env.BASE_URL}profile/avatar-project-analysis.png`}
+            alt=""
+            className="avatar-pose-img pose-analysing"
+            loading="lazy"
+          />
+          <img
+            src={`${import.meta.env.BASE_URL}profile/avatar-stunt.png`}
+            alt=""
+            className="avatar-pose-img pose-stunt"
+            loading="lazy"
+          />
+          <img
+            src={`${import.meta.env.BASE_URL}profile/avatar-contact.png`}
+            alt=""
+            className="avatar-pose-img pose-waving"
+            loading="lazy"
+          />
+        </div>
       </div>
 
       <section id="home" className="scene-section scene-home" aria-label="Home town scene">
-        <JourneyPath pathId="home" />
+        <JourneyPath pathId="home" onPathRef={registerPathRef} />
         <div className="scene-overlay">
           <div className="scene-overlay-inner">
             <span className="scene-label">HOME</span>
@@ -472,7 +571,7 @@ function App() {
       </section>
 
       <section id="education" className="scene-section scene-education" aria-label="Education town scene.">
-        <JourneyPath pathId="education" />
+        <JourneyPath pathId="education" onPathRef={registerPathRef} />
         <div className="scene-overlay scene-overlay-career">
           <div className="scene-bottom-info">
             <button type="button" className="scene-action-button" onClick={() => setActiveModal('education')}>
@@ -483,7 +582,7 @@ function App() {
       </section>
 
       <section id="educate2trade" className="scene-section scene-educate2trade" aria-label="Educate2Trade career scene.">
-        <JourneyPath pathId="educate2trade" />
+        <JourneyPath pathId="educate2trade" onPathRef={registerPathRef} />
         <div className="scene-overlay scene-overlay-career">
           <div className="scene-bottom-info">
             <span className="scene-label">CAREER</span>
@@ -497,7 +596,7 @@ function App() {
       </section>
 
       <section id="bhf" className="scene-section scene-bhf" aria-label="British Heart Foundation career scene.">
-        <JourneyPath pathId="bhf" />
+        <JourneyPath pathId="bhf" onPathRef={registerPathRef} />
         <div className="scene-overlay scene-overlay-career">
           <div className="scene-bottom-info">
             <span className="scene-label">CAREER</span>
@@ -511,7 +610,7 @@ function App() {
       </section>
 
       <section id="aston" className="scene-section scene-aston" aria-label="Aston Business Intelligence career scene.">
-        <JourneyPath pathId="aston" />
+        <JourneyPath pathId="aston" onPathRef={registerPathRef} />
         <div className="scene-overlay scene-overlay-career">
           <div className="scene-bottom-info">
             <span className="scene-label">CAREER</span>
@@ -525,7 +624,7 @@ function App() {
       </section>
 
       <section id="ceva" className="scene-section scene-ceva" aria-label="CEVA Logistics career scene.">
-        <JourneyPath pathId="ceva" />
+        <JourneyPath pathId="ceva" onPathRef={registerPathRef} />
         <div className="scene-overlay scene-overlay-career">
           <div className="scene-bottom-info">
             <span className="scene-label">CAREER</span>
