@@ -836,6 +836,89 @@ function App() {
     View Project →
   </a>
 </div>
+
+<div className="project-card">
+  <div className="project-number">04</div>
+
+  <span className="project-type">DATA ANALYTICS</span>
+
+  <h3>UK Rail Operations Performance Analysis</h3>
+
+
+<img
+  src="/gaurav-portfolio/project/uk-rail-operations-banner.png"
+  alt="UK Rail Operations Performance Analysis Dashboard"
+  className="project-dashboard"
+/>
+
+  <p>
+    Analysed UK rail cancellation performance using official Office of Rail
+    and Road (ORR) data and PostgreSQL. Evaluated operator performance,
+    cancellation causes, reporting-period trends, performance variation and
+    data quality across 2,563 records and 96 reporting periods.
+  </p>
+
+  <div className="project-tools">
+  <span>SQL</span>
+  <span>PostgreSQL</span>
+  <span>ORR Open Data</span>
+  <span>Data Cleaning</span>
+  <span>KPI Analysis</span>
+  <span>Window Functions</span>
+  <span>Data Validation</span>
+</div>
+
+  <a
+    href="https://github.com/solankigaurav976-stack/uk-rail-operations-sql-analysis"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="project-button"
+  >
+    View Project →
+  </a>
+</div>
+
+<div className="project-card">
+  <div className="project-number">05</div>
+
+  <span className="project-type">BUSINESS INTELLIGENCE</span>
+
+  <h3>Fleet Fuel & Efficiency Analysis</h3>
+
+
+<img
+  src="/gaurav-portfolio/project/fleet-fuel-efficiency-dashboard.png"
+  alt="Fleet Fuel & Efficiency Analysis Dashboard"
+  className="project-dashboard"
+/>
+
+  <p>
+    Built an Excel and VBA-based fleet fuel and efficiency analysis system to
+    evaluate fuel consumption, vehicle efficiency and estimated fuel costs.
+    Cleaned and validated 1,138 fleet records, identified data-quality
+    exceptions and developed an automated management dashboard.
+  </p>
+
+  <div className="project-tools">
+  <span>Excel</span>
+  <span>Excel VBA</span>
+  <span>Data Cleaning</span>
+  <span>KPI Analysis</span>
+  <span>Dashboard Development</span>
+  <span>Fuel Cost Analysis</span>
+  <span>Data Visualisation</span>
+  <span>Automation</span>
+</div>
+
+  <a
+    href="https://github.com/solankigaurav976-stack/fleet-fuel-efficiency-vba-analysis"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="project-button"
+  >
+    View Project →
+  </a>
+</div>
 </div>
 </section>  
     <section id="hobbies" className="hobbies-section">
